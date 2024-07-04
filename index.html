@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Now Playing</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #282828;
+            color: #fff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .widget {
+            text-align: center;
+            background-color: #333;
+            padding: 20px;
+            border-radius: 10px;
+        }
+        .album-cover {
+            width: 150px;
+            height: 150px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+        }
+        .song-title {
+            font-size: 1.2em;
+            margin-bottom: 5px;
+        }
+        .artist-name {
+            font-size: 1em;
+            color: #bbb;
+        }
+    </style>
+</head>
+<body>
+    <div class="widget">
+        <img id="album-cover" class="album-cover" src="" alt="Album Cover">
+        <div id="song-title" class="song-title">Loading...</div>
+        <div id="artist-name" class="artist-name"></div>
+    </div>
+
+    <script>
+        //not
+        const apiKey = 'API_KEY';
+        const username = 'LAST_FM_USERNAME';
+
+        async function fetchNowPlaying() {
+            try {
+                const response = await fetch(`http://ws.audioscrobbler.com/2.0/?method=user.getrecenttracks&user=${username}&api_key=${apiKey}&format=json&limit=1`);
+                const data = await response.json();
+                const track = data.recenttracks.track[0];
+
+                if (track['@attr'] && track['@attr'].nowplaying === 'true') {
+                    document.getElementById('song-title').textContent = track.name;
+                    document.getElementById('artist-name').textContent = track.artist['#text'];
+                    document.getElementById('album-cover').src = track.image[2]['#text'];
+                } else {
+                    document.getElementById('song-title').textContent = 'No song playing';
+                    document.getElementById('artist-name').textContent = '';
+                    document.getElementById('album-cover').src = '';
+                }
+            } catch (error) {
+                console.error('Error fetching now playing track:', error);
+                document.getElementById('song-title').textContent = 'Error fetching data';
+                document.getElementById('artist-name').textContent = '';
+                document.getElementById('album-cover').src = '';
+            }
+        }
+
+        fetchNowPlaying();
+        setInterval(fetchNowPlaying, 10000); // Refresh every 10 seconds
+    </script>
+</body>
+</html>
